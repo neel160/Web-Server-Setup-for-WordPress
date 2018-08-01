@@ -1,0 +1,85 @@
+@echo OFF
+echo Author : Neelam Verma > log.txt
+echo [%date%]-------[%time%] >>log.txt
+set cdate=%date%
+set ctime=%time%
+echo Running utilities >> log.txt
+echo This window will be exited after operations are completed
+echo System Version
+ver 
+ver >>log.txt
+echo %cdate% ---------- %ctime% >>log.txt
+echo System information
+systeminfo >> log.txt
+echo Information stored in file successfully
+echo Gathering user information
+SET "Value="
+SET Users="dir C:\Users\ /B"
+setlocal enableDelayedExpansion
+FOR /F "tokens=1*" %%A IN ('%Users%') DO (
+    SET "Name=%%A"
+    IF /I "!NAME!" NEQ "Administrator" (
+        IF /I "!NAME!" NEQ "Public" (
+            IF /I "!NAME!" NEQ !USERNAME! (
+                SET "Value=!Value! "
+                SET "Value=!Value!%%A"
+
+            )
+        )
+    )
+)
+echo Users are - %Value%
+echo %cdate% ---------- %ctime% >> log.txt
+echo Users on local machine >>log.txt 
+echo %Value% >> log.txt
+echo %cdate% ---------- %ctime% >> log.txt
+echo Gathering information about services on all ports 
+echo Local services >>log.txt
+netstat -an | find /C "LIST" > tmpFile
+netstat -an |find /C "LIST" >>log.txt
+echo %cdate% ---------- %ctime% >> log.txt
+set /P test=<tmpFile
+del tmpFile
+set max=20
+IF !test! GTR !max! echo Greater than !test! Max=!Max! >> log.txt
+IF !test! LEQ !max! echo Less than !test! Max=!Max! >>log.txt
+echo Running disk utility on Volume C:
+echo Checking drive C: for error >> log.txt
+echo %cdate% ---------- %ctime% >>log.txt
+chkdsk C:
+echo %cdate% ---------- %ctime% >> log.txt
+echo Done 
+echo Traversing files in drive C:
+echo %cdate% ---------- %ctime% >> log.txt
+echo Files in Volume C:
+for /r c:\ %%a in (*) do @echo %%a >> files.txt
+echo List of files are stored in files.txt 
+echo List generated in files.txt >> log.txt
+echo %cdate% ---------- %ctime% >> log.txt
+echo Operation completed successfully
+echo %cdate% ---------- %ctime% >> log.txt
+echo Starting and killing services
+echo Service - notepad 
+echo Serivce - cmd
+set  A=notepad.exe
+set  B=cmd.exe
+echo %A% > ServiceNames
+echo %B% >> ServiceNames
+echo Starting services 
+echo %cdate% ---------- %ctime% >> log.txt
+start notepad.exe
+start cmd.exe
+start log.txt
+for /f %%a in (ServiceNames) do (
+    set timestamp=!date!!time!
+    ECHO !timestamp! - Stopping Service %%a >> log.txt
+   
+    taskkill /f /im %%a >> log.txt
+	echo %%a killed 
+	echo "Waiting to kill another process"
+    ping localhost -n 5 > nul
+)
+if exist ServiceNames del ServiceNames
+echo Operation Completed
+
+
